@@ -33,9 +33,9 @@ from django_ses_plus.models import SendEmailMixin
 class AuthUser(SendEmailMixin,...):
     ....
     
-user.send_sms(subject, template_path, context, from_email=None, language=None)
+user.send_email(subject, template_path, context, from_email=None, language=None)
 # OR
-from django_ses_plus.tasks import send_sms
+from django_ses_plus.tasks import send_email
 send_email.delay(subject, to_email, html_message, from_email=None, message=None, recipient_id=None)
 ```
 
