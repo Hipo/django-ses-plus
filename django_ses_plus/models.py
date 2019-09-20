@@ -7,6 +7,7 @@ from django.template.loader import render_to_string
 from django.utils import translation
 from django.utils.translation import ugettext_lazy as _
 
+from django_ses_plus.settings import DJANGO_SES_PLUS_SETTINGS
 from .utils import sent_email_upload_path
 
 
@@ -38,6 +39,8 @@ class SendEmailMixin(object):
 
     def send_email(self, subject, template_path, context, from_email=None, language=None):
         from .tasks import send_email
+        if not DJANGO_SES_PLUS_SETTINGS["SEND_EMAIL"]:
+            return _("Email cannot be sent due to SEND_EMAIL flag in project settings.")
 
         if isinstance(self, get_user_model()):
             recipient_id = self.pk
