@@ -12,7 +12,13 @@ You can see the releases [here](https://github.com/Hipo/django-ses-plus/releases
 
 2. Add **django_ses_plus** to the `INSTALLED_APPS` in the settings file.
 
-3. Configure settings.
+3. Set up Django SES Plus email backend.
+
+`EMAIL_BACKEND = 'django_ses_plus.backends.SESPlusBackend'`
+
+Please refer to django-ses package [documentation](https://github.com/django-ses/django-ses) for detailed configuration of AWS SES.
+
+4. Configure settings.
 
 ```
 DJANGO_SES_PLUS_SETTINGS = {
@@ -24,9 +30,9 @@ DJANGO_SES_PLUS_SETTINGS = {
 }
 ```
 
-4. `python manage.py migrate`
+5. `python manage.py migrate`
 
-5. (Optional) Add `SendEmailMixin` to your auth user model.
+6. (Optional) Add `SendEmailMixin` to your auth user model.
 ```
 from django_ses_plus.models import SendEmailMixin
 
