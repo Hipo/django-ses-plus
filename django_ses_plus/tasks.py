@@ -2,6 +2,7 @@ from uuid import uuid4
 
 from celery import shared_task
 
+from django_ses_plus import logger
 from .settings import DJANGO_SES_PLUS_SETTINGS
 from django.core.files.base import ContentFile
 from django.core.mail import send_mail
@@ -35,6 +36,6 @@ def send_email(subject, to_email, html_message, from_email=None, message=None, r
             from_email=from_email,
             to_email=to_email,
         )
-    except Exception:
+    except Exception as e:
         # Do not retry if object creation fails.
-        pass
+        logger.error(str(e), exc_info=e, extra={'trace': True})
