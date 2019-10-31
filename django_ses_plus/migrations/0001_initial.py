@@ -3,7 +3,7 @@
 from django.conf import settings
 from django.db import migrations, models
 import django.db.models.deletion
-import qube.django_ses_plus.utils
+import django_ses_plus.utils
 import uuid
 
 
@@ -23,7 +23,7 @@ class Migration(migrations.Migration):
                 ('to_email', models.EmailField(max_length=254)),
                 ('from_email', models.EmailField(max_length=254)),
                 ('subject', models.TextField()),
-                ('html', models.FileField(upload_to=qube.django_ses_plus.utils.sent_email_upload_path)),
+                ('html', models.FileField(upload_to=django_ses_plus.utils.sent_email_upload_path)),
                 ('creation_datetime', models.DateTimeField(auto_now_add=True)),
                 ('update_datetime', models.DateTimeField(auto_now=True)),
                 ('recipient', models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='sent_emails', to=settings.AUTH_USER_MODEL)),
