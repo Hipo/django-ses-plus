@@ -9,10 +9,10 @@ os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
 
 setup(
     name='django-ses-plus',
-    version='0.1.1',
+    version='0.2.1',
     packages=['django_ses_plus'],
     include_package_data=True,
-    install_requires=['Django >= 1.11', 'django-ses >= 0.8.7', 'celery >= 4'],
+    install_requires=['Django >= 1.11', 'django-ses >= 1.0.0', 'celery >= 4'],
     license='Apache-2.0',
     description="It's a Django module to store and send email with AWS SES.",
     long_description=README,
