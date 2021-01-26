@@ -9,7 +9,7 @@ os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
 
 setup(
     name='django-ses-plus',
-    version='0.2.3',
+    version='1.0.0',
     packages=['django_ses_plus'],
     include_package_data=True,
     install_requires=['Django >= 1.11', 'django-ses >= 1.0.0', 'celery >= 4'],
