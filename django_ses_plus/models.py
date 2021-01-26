@@ -1,3 +1,4 @@
+import base64
 import uuid
 
 from django.conf import settings
@@ -32,12 +33,32 @@ class SentEmail(models.Model):
         return f"{self.subject} to {self.to_email}"
 
 
+class SentEmailAttachment(models.Model):
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+
+    sent_email = models.ForeignKey(to="django_ses_plus.SentEmail", related_name="attachments", on_delete=models.CASCADE)
+    name = models.CharField(max_length=255)
+    content = models.BinaryField()
+    type = models.CharField(max_length=255)
+
+    creation_datetime = models.DateTimeField(auto_now_add=True)
+    update_datetime = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = _("Sent Email Attachment")
+        verbose_name_plural = _("Sent Email Attachments")
+
+    def __str__(self):
+        return f"{self.name} ({self.type})"
+
+
 class SendEmailMixin(object):
 
     def get_to_email(self):
         return self.email
 
-    def send_email(self, subject, template_path, context, from_email=None, language=None):
+    def send_email(self, subject, template_path, context, attachments=None, from_email=None, language=None):
         from .tasks import send_email
         if not DJANGO_SES_PLUS_SETTINGS["SEND_EMAIL"]:
             return _("Email cannot be sent due to SEND_EMAIL flag in project settings.")
@@ -50,11 +71,23 @@ class SendEmailMixin(object):
         if language:
             translation.activate(language)
 
+        if attachments is not None:
+            assert isinstance(attachments, list), "Attachments should be a `list` of `dict` objects."
+
+            for attachment in attachments:
+                assert all([key in attachment for key in ["name", "content", "type"]]), "Attachments should contain `name`, `content` and `type`."
+
+                if isinstance(attachment["content"], bytes):
+                    attachment["content"] = base64.b64encode(attachment["content"]).decode("utf-8")
+                else:
+                    assert False, f"Attachment contents should be `bytes`, not {type(attachment['content'])}."
+
         html_message = render_to_string(template_path, context)
         send_email.delay(
             subject=subject,
             to_email=self.get_to_email(),
             html_message=html_message,
+            attachments=attachments,
             from_email=from_email,
             recipient_id=recipient_id
         )
