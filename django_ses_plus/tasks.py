@@ -44,7 +44,7 @@ def send_email(subject, to_email, html_message, from_email=None, message=None, r
                     sent_email=sent_email,
                     filename=attachment["filename"],
                     content=ContentFile(content=base64.b64decode(attachment["content"]), name=attachment["filename"]),
-                    type=attachment["mimetype"]
+                    mimetype=attachment["mimetype"]
                 )
     except Exception as e:
         # Do not retry if object creation fails.
