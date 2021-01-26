@@ -9,7 +9,7 @@ from django.utils import translation
 from django.utils.translation import ugettext_lazy as _
 
 from django_ses_plus.settings import DJANGO_SES_PLUS_SETTINGS
-from .utils import sent_email_upload_path
+from .utils import sent_email_upload_path, sent_email_attachment_upload_path
 
 
 class SentEmail(models.Model):
@@ -38,9 +38,9 @@ class SentEmailAttachment(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 
     sent_email = models.ForeignKey(to="django_ses_plus.SentEmail", related_name="attachments", on_delete=models.CASCADE)
-    name = models.CharField(max_length=255)
-    content = models.BinaryField()
-    type = models.CharField(max_length=255)
+    filename = models.CharField(max_length=255)
+    content = models.FileField(upload_to=sent_email_attachment_upload_path)
+    mimetype = models.CharField(help_text="e.g. text/html, application/pdf, image/png...", max_length=255)
 
     creation_datetime = models.DateTimeField(auto_now_add=True)
     update_datetime = models.DateTimeField(auto_now=True)
@@ -50,7 +50,7 @@ class SentEmailAttachment(models.Model):
         verbose_name_plural = _("Sent Email Attachments")
 
     def __str__(self):
-        return f"{self.name} ({self.type})"
+        return f"{self.filename} ({self.mimetype})"
 
 
 class SendEmailMixin(object):
@@ -58,7 +58,7 @@ class SendEmailMixin(object):
     def get_to_email(self):
         return self.email
 
-    def send_email(self, subject, template_path, context, attachments=None, from_email=None, language=None):
+    def send_email(self, subject, template_path, context, from_email=None, language=None, attachments=None):
         from .tasks import send_email
         if not DJANGO_SES_PLUS_SETTINGS["SEND_EMAIL"]:
             return _("Email cannot be sent due to SEND_EMAIL flag in project settings.")
@@ -75,9 +75,11 @@ class SendEmailMixin(object):
             assert isinstance(attachments, list), "Attachments should be a `list` of `dict` objects."
 
             for attachment in attachments:
-                assert all([key in attachment for key in ["name", "content", "type"]]), "Attachments should contain `name`, `content` and `type`."
+                assert all([key in attachment for key in ["filename", "content", "mimetype"]]), "Attachments should contain `filename`, `content` and `mimetype`."
 
                 if isinstance(attachment["content"], bytes):
+                    # Since celery only accepts JSON serializable types and `bytes` is not JSON serializable,
+                    # Base64 encoding is used to be able to pass attachment content to the celery task,
                     attachment["content"] = base64.b64encode(attachment["content"]).decode("utf-8")
                 else:
                     assert False, f"Attachment contents should be `bytes`, not {type(attachment['content'])}."

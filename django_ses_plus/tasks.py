@@ -13,7 +13,7 @@ from .utils import send_mail
 
 
 @shared_task(retry_kwargs=DJANGO_SES_PLUS_SETTINGS["CELERY_TASK_RETRY_KWARGS"])
-def send_email(subject, to_email, html_message, attachments=None, from_email=None, message=None, recipient_id=None):
+def send_email(subject, to_email, html_message, from_email=None, message=None, recipient_id=None, attachments=None):
     if not DJANGO_SES_PLUS_SETTINGS["SEND_EMAIL"]:
         return _("Email cannot be sent due to SEND_EMAIL flag in project settings.")
 
@@ -42,9 +42,9 @@ def send_email(subject, to_email, html_message, attachments=None, from_email=Non
             for attachment in attachments:
                 SentEmailAttachment.objects.create(
                     sent_email=sent_email,
-                    name=attachment["name"],
-                    content=base64.b64decode(attachment["content"]),
-                    type=attachment["type"]
+                    filename=attachment["filename"],
+                    content=ContentFile(content=base64.b64decode(attachment["content"]), name=attachment["filename"]),
+                    type=attachment["mimetype"]
                 )
     except Exception as e:
         # Do not retry if object creation fails.
