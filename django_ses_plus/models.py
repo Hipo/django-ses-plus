@@ -34,7 +34,9 @@ class SentEmail(models.Model):
 
     # tracking & monitoring
     message_id = models.CharField(max_length=100, blank=True)
-    status = models.CharField(choices=Status.choices, default=Status.unknown, max_length=32)
+    status = models.CharField(choices=Status.choices, default=Status.UNKNOWN, max_length=50)
+    bounce_type = models.CharField(max_length=50, blank=True)
+    bounce_sub_type = models.CharField(max_length=50, blank=True)
     is_opened = models.BooleanField(default=False)
     is_clicked = models.BooleanField(default=False)
     is_complained = models.BooleanField(default=False)
@@ -75,14 +77,15 @@ class SentEmail(models.Model):
     @staticmethod
     @receiver(signals.bounce_received)
     def bounce_handler(sender, mail_obj, bounce_obj, **kwargs):
-        # bounce_obj['bounceType'] == 'Permanent'
         message_id = mail_obj['messageId']
         recipients = [r['emailAddress'] for r in bounce_obj['bouncedRecipients']]
         SentEmail.objects.filter(
             message_id=message_id,
             to_email__in=recipients,
         ).update(
-            status=SentEmail.Status.BOUNCED
+            status=SentEmail.Status.BOUNCED,
+            bounce_type=bounce_obj['bounceType'],
+            bounce_sub_type=bounce_obj['bounceSubType'],
         )
 
     @staticmethod
