@@ -4,15 +4,25 @@ import uuid
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.db import models
+from django.dispatch import receiver
 from django.template.loader import render_to_string
 from django.utils import translation
 from django.utils.translation import ugettext_lazy as _
+from django_ses import signals
 
 from django_ses_plus.settings import DJANGO_SES_PLUS_SETTINGS
 from .utils import sent_email_upload_path, sent_email_attachment_upload_path
 
 
 class SentEmail(models.Model):
+    class Status(models.TextChoices):
+        UNKNOWN = 'unknown', 'Unknown'
+        SENT = 'sent', 'Sent'
+        DELIVERED = 'delivered', 'Delivered'
+        BOUNCED = 'bounced', 'Bounced'
+        # Don't support rejects and rendering failures for now.
+        # REJECTED = 'rejected', 'Rejected'
+        # RENDERING_FAILURE = 'rendering-failure', 'Rendering Failure'
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 
@@ -21,6 +31,13 @@ class SentEmail(models.Model):
     from_email = models.EmailField()
     subject = models.TextField()
     html = models.FileField(upload_to=sent_email_upload_path)
+
+    # tracking & monitoring
+    message_id = models.CharField(max_length=100, blank=True)
+    status = models.CharField(choices=Status.choices, default=Status.unknown, max_length=32)
+    is_opened = models.BooleanField(default=False)
+    is_clicked = models.BooleanField(default=False)
+    is_complained = models.BooleanField(default=False)
 
     creation_datetime = models.DateTimeField(auto_now_add=True)
     update_datetime = models.DateTimeField(auto_now=True)
@@ -31,6 +48,76 @@ class SentEmail(models.Model):
 
     def __str__(self):
         return f"{self.subject} to {self.to_email}"
+
+    @staticmethod
+    @receiver(signals.send_received)
+    def send_handler(sender, mail_obj, send_obj, **kwargs):
+        message_id = mail_obj['messageId']
+        SentEmail.objects.filter(
+            message_id=message_id,
+            status=SentEmail.Status.UNKNOWN,
+        ).update(
+            status=SentEmail.Status.SENT
+        )
+
+    @staticmethod
+    @receiver(signals.delivery_received)
+    def delivery_handler(sender, mail_obj, delivery_obj, **kwargs):
+        message_id = mail_obj['messageId']
+        recipients = delivery_obj['recipients']
+        SentEmail.objects.filter(
+            message_id=message_id,
+            to_email__in=recipients,
+        ).update(
+            status=SentEmail.Status.DELIVERED
+        )
+
+    @staticmethod
+    @receiver(signals.bounce_received)
+    def bounce_handler(sender, mail_obj, bounce_obj, **kwargs):
+        # bounce_obj['bounceType'] == 'Permanent'
+        message_id = mail_obj['messageId']
+        recipients = [r['emailAddress'] for r in bounce_obj['bouncedRecipients']]
+        SentEmail.objects.filter(
+            message_id=message_id,
+            to_email__in=recipients,
+        ).update(
+            status=SentEmail.Status.BOUNCED
+        )
+
+    @staticmethod
+    @receiver(signals.open_received)
+    def open_handler(sender, mail_obj, open_obj, **kwargs):
+        # open_obj does not provide recipient emails.
+        message_id = mail_obj['messageId']
+        SentEmail.objects.filter(
+            message_id=message_id,
+        ).update(
+            is_opened=True
+        )
+
+    @staticmethod
+    @receiver(signals.click_received)
+    def click_handler(sender, mail_obj, click_obj, **kwargs):
+        # click_obj does not provide recipient emails.
+        message_id = mail_obj['messageId']
+        SentEmail.objects.filter(
+            message_id=message_id,
+        ).update(
+            is_clicked=True
+        )
+
+    @staticmethod
+    @receiver(signals.complaint_received)
+    def compliant_handler(sender, mail_obj, complaint_obj, **kwargs):
+        message_id = mail_obj['messageId']
+        recipients = complaint_obj['complainedRecipients']
+        SentEmail.objects.filter(
+            message_id=message_id,
+            to_email__in=recipients,
+        ).update(
+            is_complained=True
+        )
 
 
 class SentEmailAttachment(models.Model):
