@@ -13,6 +13,7 @@ class SentEmailAdmin(admin.ModelAdmin):
     list_display = ("id", "to_email", "subject", "status", "creation_datetime")
     list_filter = ("status", "is_opened", "is_clicked", "is_complained")
     search_fields = ("to_email", "subject", )
+    ordering = ("-creation_datetime",)
     date_hierarchy = "creation_datetime"
 
     def get_actions(self, request):
