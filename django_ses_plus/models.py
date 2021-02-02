@@ -96,6 +96,7 @@ class SentEmail(models.Model):
         SentEmail.objects.filter(
             message_id=message_id,
         ).update(
+            status=SentEmail.Status.DELIVERED,
             is_opened=True
         )
 
@@ -107,6 +108,7 @@ class SentEmail(models.Model):
         SentEmail.objects.filter(
             message_id=message_id,
         ).update(
+            status=SentEmail.Status.DELIVERED,
             is_clicked=True
         )
 
@@ -119,6 +121,7 @@ class SentEmail(models.Model):
             message_id=message_id,
             to_email__in=recipients,
         ).update(
+            status=SentEmail.Status.DELIVERED,
             is_complained=True
         )
 
