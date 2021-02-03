@@ -32,7 +32,7 @@ def send_email(subject, to_email, html_message, from_email=None, message=None, r
 
     try:
         sent_email = SentEmail.objects.create(
-            message_id=mail.extra_headers['message_id'],
+            message_id=mail.extra_headers.get('message_id', ''),
             recipient_id=recipient_id,
             subject=subject,
             html=ContentFile(content=bytes(html_message, encoding="utf8"), name="{}.html".format(uuid4())),
