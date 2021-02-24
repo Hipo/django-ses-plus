@@ -1,4 +1,5 @@
 import base64
+import sys
 import uuid
 
 from django.conf import settings
@@ -78,6 +79,9 @@ class SendEmailMixin(object):
                 assert all([key in attachment for key in ["filename", "content", "mimetype"]]), "Attachments should contain `filename`, `content` and `mimetype`."
 
                 if isinstance(attachment["content"], bytes):
+                    assert (
+                        sys.getsizeof(attachment["content"]) <= DJANGO_SES_PLUS_SETTINGS["ATTACHMENTS_MAX_SIZE"]
+                    ), f'Attachment sizes should be smaller than {DJANGO_SES_PLUS_SETTINGS["ATTACHMENTS_MAX_SIZE"]} bytes.'
                     # Since celery only accepts JSON serializable types and `bytes` is not JSON serializable,
                     # Base64 encoding is used to be able to pass attachment content to the celery task,
                     attachment["content"] = base64.b64encode(attachment["content"]).decode("utf-8")

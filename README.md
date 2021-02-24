@@ -24,9 +24,10 @@ Please refer to django-ses package [documentation](https://github.com/django-ses
 DJANGO_SES_PLUS_SETTINGS = {
     "SEND_EMAIL": True,  # True by default.
     "CELERY_TASK_RETRY_KWARGS": {
-        'max_retries': 15, 
+        'max_retries': 15,
         'countdown': 60
-    }
+    },
+    "ATTACHMENTS_MAX_SIZE": 102400, # in bytes. 100KB default.
 }
 ```
 
