@@ -24,9 +24,11 @@ Please refer to django-ses package [documentation](https://github.com/django-ses
 DJANGO_SES_PLUS_SETTINGS = {
     "SEND_EMAIL": True,  # True by default.
     "CELERY_TASK_RETRY_KWARGS": {
-        'max_retries': 15, 
+        'max_retries': 15,
         'countdown': 60
-    }
+    },
+    "FILE_STORAGE_BACKEND": None, # Should be a subclass of django.core.files.storage.Storage.
+                                  # Default is None which uses DEFAULT_FILE_STORAGE.
 }
 ```
 
