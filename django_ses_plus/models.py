@@ -8,7 +8,7 @@ from django.utils import translation
 from django.utils.translation import ugettext_lazy as _
 
 from django_ses_plus.settings import DJANGO_SES_PLUS_SETTINGS
-from .utils import sent_email_upload_path
+from .utils import get_file_storage_backend, sent_email_upload_path
 
 
 class SentEmail(models.Model):
@@ -19,7 +19,7 @@ class SentEmail(models.Model):
     to_email = models.EmailField()
     from_email = models.EmailField()
     subject = models.TextField()
-    html = models.FileField(upload_to=sent_email_upload_path)
+    html = models.FileField(upload_to=sent_email_upload_path, storage=get_file_storage_backend)
 
     creation_datetime = models.DateTimeField(auto_now_add=True)
     update_datetime = models.DateTimeField(auto_now=True)
