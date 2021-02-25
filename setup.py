@@ -40,4 +40,7 @@ setup(
         'Topic :: Internet :: WWW/HTTP',
         'Topic :: Internet :: WWW/HTTP :: Dynamic Content',
     ],
+    extras_require={
+        'events': ['requests<3', 'M2Crypto'],
+    },
 )

@@ -20,7 +20,7 @@ def send_email(subject, to_email, html_message, from_email=None, message=None, r
     if not from_email:
         from_email = DJANGO_SES_PLUS_SETTINGS["DEFAULT_FROM_EMAIL"]
 
-    send_mail(
+    num_sent, mail = send_mail(
         subject=subject,
         message=message,
         html_message=html_message,
@@ -32,6 +32,7 @@ def send_email(subject, to_email, html_message, from_email=None, message=None, r
 
     try:
         sent_email = SentEmail.objects.create(
+            message_id=mail.extra_headers.get('message_id', ''),
             recipient_id=recipient_id,
             subject=subject,
             html=ContentFile(content=bytes(html_message, encoding="utf8"), name="{}.html".format(uuid4())),
@@ -49,3 +50,5 @@ def send_email(subject, to_email, html_message, from_email=None, message=None, r
     except Exception as e:
         # Do not retry if object creation fails.
         logger.error(str(e), exc_info=e, extra={'trace': True})
+    else:
+        return sent_email.id
