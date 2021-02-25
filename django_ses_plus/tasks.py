@@ -51,4 +51,4 @@ def send_email(subject, to_email, html_message, from_email=None, message=None, r
         # Do not retry if object creation fails.
         logger.error(str(e), exc_info=e, extra={'trace': True})
     else:
-        return sent_email
+        return sent_email.id
