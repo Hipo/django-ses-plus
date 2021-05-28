@@ -2,7 +2,7 @@ import uuid
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
-from django.db import models
+from django.db import models, transaction
 from django.template.loader import render_to_string
 from django.utils import translation
 from django.utils.translation import ugettext_lazy as _
@@ -51,12 +51,14 @@ class SendEmailMixin(object):
             translation.activate(language)
 
         html_message = render_to_string(template_path, context)
-        send_email.delay(
-            subject=subject,
-            to_email=self.get_to_email(),
-            html_message=html_message,
-            from_email=from_email,
-            recipient_id=recipient_id
+        transaction.on_commit(
+            lambda: send_email.delay(
+                subject=subject,
+                to_email=self.get_to_email(),
+                html_message=html_message,
+                from_email=from_email,
+                recipient_id=recipient_id
+            )
         )
 
         if language:
