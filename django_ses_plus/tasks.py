@@ -21,9 +21,9 @@ def send_email(subject, to_email, html_message, from_email=None, message=None, r
 
     email = EmailMultiAlternatives(
         subject=subject,
-        message=message,
+        body=message,
         from_email=from_email,
-        recipient_list=[to_email],
+        to=[to_email],
         headers=headers
     )
     email.attach_alternative(html_message, 'text/html')
