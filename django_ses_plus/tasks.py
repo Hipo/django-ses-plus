@@ -6,7 +6,7 @@ from django_ses_plus import logger
 from .settings import DJANGO_SES_PLUS_SETTINGS
 from django.core.files.base import ContentFile
 from django.core.mail import send_mail
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 
 from .models import SentEmail
 
