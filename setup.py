@@ -12,7 +12,7 @@ setup(
     version='1.0.0',
     packages=['django_ses_plus'],
     include_package_data=True,
-    install_requires=['Django >= 3.2', 'django-ses >= 1.0.0', 'celery >= 4'],
+    install_requires=['Django >= 3.2', 'django-ses >= 2.1.1', 'celery >= 4'],
     license='Apache-2.0',
     description="It's a Django module to store and send email with AWS SES.",
     long_description=README,
