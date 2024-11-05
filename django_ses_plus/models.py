@@ -7,8 +7,8 @@ from django.db import models
 from django.dispatch import receiver
 from django.template.loader import render_to_string
 from django.utils import translation
-from django.utils.translation import ugettext_lazy as _
 from django_ses import signals
+from django.utils.translation import gettext_lazy as _
 
 from django_ses_plus.settings import DJANGO_SES_PLUS_SETTINGS
 from .utils import sent_email_upload_path, sent_email_attachment_upload_path

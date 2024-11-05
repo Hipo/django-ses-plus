@@ -5,7 +5,8 @@ from celery import shared_task
 
 from django_ses_plus import logger
 from django.core.files.base import ContentFile
-from django.utils.translation import ugettext_lazy as _
+from django.core.mail import send_mail
+from django.utils.translation import gettext_lazy as _
 
 from .models import SentEmail, SentEmailAttachment
 from .settings import DJANGO_SES_PLUS_SETTINGS
